@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Importar backup – Craques de Aldeia</title>
+<style>body{font-family:system-ui,sans-serif;background:#edf1ea;color:#16211a;margin:0}.w{max-width:560px;margin:0 auto;padding:20px 16px}
+.b{background:#fff;border:1px solid #d3ddd1;border-radius:12px;padding:16px;margin:12px 0}button{border:0;border-radius:10px;padding:10px 14px;background:#1d6a3a;color:#fff;font-weight:700;font-size:1rem}
+#log{white-space:pre-wrap;font-size:.9rem}.e{color:#b3261e}</style></head><body><div class="w">
+<h1>Importar backup</h1>
+<div class="b" id="semlogin" hidden>Primeiro entre como organizador: abra a <a href="/">página do app</a>, toque em <b>Entrar</b> e volte aqui.</div>
+<div class="b" id="form" hidden><p>Escolha o arquivo <b>craques-backup.json</b>. Jogadores, regras, torneio, avaliações e fotos entram no banco. Rodar de novo não duplica nada.</p>
+<input type="file" id="arq" accept=".json,application/json"><p><button id="ir">Importar</button></p></div>
+<div class="b"><div id="log">Aguardando…</div></div></div>
+<script>
+const T=(()=>{try{return localStorage.getItem('craques-token')||''}catch{return ''}})();
+document.getElementById(T?'form':'semlogin').hidden=false;
+const log=m=>document.getElementById('log').textContent+='\n'+m;
+async function envia(body){const r=await fetch('/api/importar',{method:'POST',headers:{'Content-Type':'application/json','x-token':T},body:JSON.stringify(body)});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.erro||'Falha');return j.gravados}
+document.getElementById('ir').onclick=async()=>{const f=document.getElementById('arq').files[0];if(!f)return alert('Escolha o arquivo.');
+  document.getElementById('log').textContent='Lendo arquivo…';
+  try{const d=JSON.parse(await f.text());
+    for(const [c,docs] of Object.entries(d.colecoes||{})){const n=await envia({colecoes:{[c]:docs}});log(`✓ ${c}: ${n}`)}
+    let lote={},tam=0,tot=0;const fl=async()=>{if(!Object.keys(lote).length)return;tot+=await envia({fotos:lote});log(`✓ fotos: ${tot}`);lote={};tam=0};
+    for(const [id,x] of Object.entries(d.fotos||{})){if(tam+x.b.length>2500000)await fl();lote[id]=x;tam+=x.b.length}
+    await fl();log('\nPronto! Abra o app para conferir.')}
+  catch(e){log('ERRO: '+e.message)}};
+</script></body></html>
