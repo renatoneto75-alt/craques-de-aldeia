@@ -1,4 +1,26 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.art-top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:6px}
+.art-top .seg button{font-size:1.05rem;padding:8px 14px}
+.art-chips{margin:8px 0 12px}
+.art-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.art-grid .step{margin:0}
+.art-ol{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
+.art-li{display:flex;align-items:center;gap:10px;padding:6px 8px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
+.art .ava{width:38px;height:38px;font-size:.85rem;flex:none;border-width:2px}
+.art-pos{width:30px;text-align:center;font-weight:800;flex:none}
+.art-nm{flex:1;min-width:0;font-weight:700;overflow:hidden;text-overflow:ellipsis}
+.art-nm small{display:block;font-weight:500;color:var(--muted);font-size:.78rem}
+.art-n{font-family:var(--f-display);font-size:1.15rem;white-space:nowrap}
+.art-ul{margin:8px 0 0;padding-left:18px;display:grid;gap:4px}
+.art-as{color:var(--muted);font-size:.88rem}
+.art-lb{display:block;font-weight:700;font-size:.88rem;margin:10px 0}
+.art-lb .txt,.art-lb select{margin-top:4px}
+.art-cores{margin:6px 0 12px}
+.art-ed{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:6px}
+.art-ed-li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
+.art-x{border:0;background:none;color:var(--danger);font-size:1.1rem;padding:4px 8px;cursor:pointer}
+.art-cnt{font-size:1rem;color:var(--muted)}
+.art-acoes{margin:4px 0 24px}.art-del{color:var(--danger)}
+</style></head><body>
 <title>Craques de Aldeia</title>
 <link rel="manifest" href="/manifest.json"><link rel="icon" href="/icone-192.png"><link rel="apple-touch-icon" href="/icone-192.png"><meta name="theme-color" content="#1d6a3a">
 <script src="/shim.js"></script>
@@ -311,6 +333,7 @@ body.has-dock main{padding-bottom:120px}
       <button class="tab" role="tab" id="tab-elenco" aria-selected="true" data-tab="elenco">Elenco</button>
       <button class="tab" role="tab" id="tab-rodada" aria-selected="false" data-tab="rodada">Sorteio de Times</button>
       <button class="tab" role="tab" id="tab-torneio" aria-selected="false" data-tab="torneio">Torneio</button>
+      <button class="tab" role="tab" id="tab-art" aria-selected="false" data-tab="art">Artilharia</button>
       <button class="tab" role="tab" id="tab-times" aria-selected="false" data-tab="times">Times</button>
       <button class="tab" role="tab" id="tab-estatuto" aria-selected="false" data-tab="estatuto">Estatuto</button>
       <button class="tab" role="tab" id="tab-aval" aria-selected="false" data-tab="aval">Avaliação</button>
@@ -355,6 +378,8 @@ body.has-dock main{padding-bottom:120px}
   </section>
 
   <section id="v-torneio" hidden></section>
+
+  <section id="v-art" hidden></section>
 
   <section id="v-aval" hidden></section>
 
@@ -673,10 +698,10 @@ function render(){
   $('#tab-aval').hidden=S.offline||!S.canCad;$('#v-aval').hidden=S.tab!=='aval';
   const dock=S.tab==='rodada'&&S.canWrite&&S.ready&&!S.offline;$('#dock').hidden=!dock;
   const avd=false;$('#avdock').hidden=!avd;
-  $('#v-torneio').hidden=S.tab!=='torneio';$('#tab-torneio').hidden=S.offline;
+  $('#v-torneio').hidden=S.tab!=='torneio';$('#v-art').hidden=S.tab!=='art';$('#tab-art').hidden=S.offline;$('#tab-torneio').hidden=S.offline;
   const tdk=S.tab==='torneio'&&S.canWrite&&S.ready&&!S.offline&&S.tView!=='res';$('#tdock').hidden=!tdk;
   document.body.classList.toggle('has-dock',dock||avd||tdk);
-  renderElenco(js); renderRodada(js); if(S.tab==='aval')renderAval(js); if(S.tab==='torneio')renderTorneio(js);
+  renderElenco(js); renderRodada(js); if(S.tab==='aval')renderAval(js); if(S.tab==='torneio')renderTorneio(js); if(S.tab==='art'&&!(S.artEdit&&$('#v-art .art-acoes')))renderArt();
 }
 function renderEst2(){const c=cfg(S.pid);
   $('#v-estatuto2').innerHTML=`<div class="est-cap"><h2>Estatuto da Pelada</h2><p>${esc(c.nome)}</p>${S.canCad?'<div class="est-tools"><button class="btn ghost" id="est-edit">Editar estatuto</button></div>':''}</div>
@@ -1298,6 +1323,119 @@ async function importar(){
     I.rows=I.rows.map(x=>ok.has(x.nome)&&x.status==='novo'?{...x,status:'existe',msg:'Importado agora'}:x);I.busy=false;drawImport()}
 }
 
+/* ---------- Artilharia: gols, assistências e cartões por data ---------- */
+// Coleção "sumulas", um documento por pelada e data: id `${pid}_${AAAA-MM-DD}`
+// { pid, data, gols:[{j,as,nj,nas}], cartoes:[{j,cor,nj}], em, por }
+const ART_COR={amarelo:{t:'Amarelo',i:'🟨'},azul:{t:'Azul',i:'🟦'},vermelho:{t:'Vermelho',i:'🟥'}};
+const artHoje=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
+const artData=s=>{const [a,m,d]=s.split('-');const dt=new Date(+a,+m-1,+d);return dt.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'}).replace('.','')};
+const artNome=(id,snap)=>(S.allJog[id]&&S.allJog[id].nome)||snap||'(removido)';
+const artSums=()=>Object.entries(S.sumulas||{}).map(([id,s])=>({id,...s})).filter(s=>(s.pid||'craques')===S.pid);
+function artAnos(){const a=new Set(artSums().map(s=>s.data.slice(0,4)));a.add(artHoje().slice(0,4));return [...a].sort().reverse()}
+function artRank(lista,chave){
+  const c={},pel={};
+  for(const s of lista){
+    if(chave==='g')s.gols.forEach(g=>{c[g.j]=(c[g.j]||0)+1;(pel[g.j]??=new Set()).add(s.data)});
+    if(chave==='a')s.gols.forEach(g=>{if(g.as){c[g.as]=(c[g.as]||0)+1;(pel[g.as]??=new Set()).add(s.data)}});
+  }
+  const r=Object.entries(c).map(([id,n])=>({id,n,p:pel[id].size})).sort((x,y)=>y.n-x.n||x.p-y.p||artNome(x.id).localeCompare(artNome(y.id),'pt'));
+  let pos=0,ant=null;r.forEach((x,i)=>{if(x.n!==ant){pos=i+1;ant=x.n}x.pos=pos});return r;
+}
+function artCartoes(lista){
+  const c={};for(const s of lista)(s.cartoes||[]).forEach(k=>{const o=(c[k.j]??={amarelo:0,azul:0,vermelho:0});o[k.cor]++});
+  return Object.entries(c).map(([id,o])=>({id,...o,peso:o.vermelho*100+o.azul*10+o.amarelo})).sort((a,b)=>b.peso-a.peso||artNome(a.id).localeCompare(artNome(b.id),'pt'));
+}
+function artLinha(x,extra){const p=S.allJog[x.id]||{nome:artNome(x.id)};const med=x.pos===1?'🥇':x.pos===2?'🥈':x.pos===3?'🥉':`${x.pos}º`;
+  return `<li class="art-li"><span class="art-pos">${med}</span>${ava(p)}<span class="art-nm">${esc(p.nome)}<small>${x.p} pelada${x.p===1?'':'s'}</small></span><b class="art-n">${extra}</b></li>`}
+function renderArt(){
+  const v=$('#v-art');if(!v)return;
+  if(S.artEdit){v.innerHTML=artEditor();return}
+  const anos=artAnos();if(!S.artAno||!anos.includes(S.artAno))S.artAno=anos[0];
+  const doAno=artSums().filter(s=>s.data.startsWith(S.artAno)).sort((a,b)=>b.data.localeCompare(a.data));
+  const g=artRank(doAno,'g'),a=artRank(doAno,'a'),k=artCartoes(doAno),tot=doAno.reduce((n,s)=>n+s.gols.length,0);
+  const vw=S.artView||'rank';
+  let h=`<div class="art"><div class="art-top"><div class="seg">${anos.map(y=>`<button type="button" data-art-ano="${y}" aria-pressed="${y===S.artAno}">${y}</button>`).join('')}</div>
+    ${S.canCad?`<button class="btn" type="button" data-art-nova>+ Lançar pelada</button>`:''}</div>
+    <p class="hint">${doAno.length} pelada${doAno.length===1?'':'s'} lançada${doAno.length===1?'':'s'} em ${S.artAno} · ${tot} gol${tot===1?'':'s'}</p>
+    <div class="chips art-chips"><button type="button" class="chip" data-art-view="rank" aria-pressed="${vw==='rank'}">Ranking</button><button type="button" class="chip" data-art-view="datas" aria-pressed="${vw==='datas'}">Por data</button></div>`;
+  if(vw==='rank'){
+    h+=`<div class="art-grid"><div class="step"><h2>⚽ Artilharia</h2>${g.length?`<ol class="art-ol">${g.map(x=>artLinha(x,`${x.n} gol${x.n===1?'':'s'}`)).join('')}</ol>`:'<p class="hint">Nenhum gol lançado ainda.</p>'}</div>
+      <div class="step"><h2>🎯 Assistências</h2>${a.length?`<ol class="art-ol">${a.map(x=>artLinha(x,`${x.n} assist.`)).join('')}</ol>`:'<p class="hint">Nenhuma assistência lançada ainda.</p>'}</div>
+      <div class="step"><h2>🟨 Cartões</h2>${k.length?`<ul class="art-ol">${k.map(x=>{const p=S.allJog[x.id]||{nome:artNome(x.id)};return `<li class="art-li">${ava(p)}<span class="art-nm">${esc(p.nome)}</span><b class="art-n">${['amarelo','azul','vermelho'].filter(c=>x[c]).map(c=>`${ART_COR[c].i} ${x[c]}`).join(' &nbsp;')}</b></li>`}).join('')}</ul>`:'<p class="hint">Nenhum cartão. Paz na pelada! 🕊️</p>'}</div></div>`;
+  }else{
+    h+=doAno.length?doAno.map(s=>{
+      const porJ={};s.gols.forEach(x=>{(porJ[x.j]??=[]).push(x)});
+      const gl=Object.entries(porJ).sort((a,b)=>b[1].length-a[1].length).map(([j,l])=>{const as=l.filter(x=>x.as).map(x=>esc(artNome(x.as,x.nas)));return `<li><b>${esc(artNome(j,l[0].nj))}</b> ${'⚽'.repeat(l.length)}${as.length?` <span class="art-as">assist.: ${as.join(', ')}</span>`:''}</li>`}).join('');
+      const cl=(s.cartoes||[]).map(c=>`<li>${ART_COR[c.cor].i} ${esc(artNome(c.j,c.nj))}</li>`).join('');
+      return `<div class="step art-dia"><div class="row" style="justify-content:space-between"><h2>${esc(artData(s.data))}</h2>${S.canCad?`<button class="btn ghost" type="button" data-art-edit="${esc(s.id)}">Editar</button>`:''}</div>
+        <p class="hint">${s.gols.length} gol${s.gols.length===1?'':'s'}${(s.cartoes||[]).length?` · ${(s.cartoes||[]).length} cartão${(s.cartoes||[]).length===1?'':'ões'}`:''}</p>
+        ${gl?`<ul class="art-ul">${gl}</ul>`:''}${cl?`<ul class="art-ul">${cl}</ul>`:''}</div>`}).join('')
+      :`<div class="step"><p class="hint">Nenhuma pelada lançada em ${S.artAno}.${S.canCad?' Toque em “+ Lançar pelada” depois do jogo.':''}</p></div>`;
+  }
+  v.innerHTML=h+'</div>';
+}
+function artOpts(sel,vazio){const l=Object.entries(S.jog).sort((a,b)=>a[1].nome.localeCompare(b[1].nome,'pt'));
+  return (vazio?`<option value="">${vazio}</option>`:'<option value="">Escolha o jogador</option>')+l.map(([id,p])=>`<option value="${esc(id)}"${id===sel?' selected':''}>${esc(p.nome)}</option>`).join('')}
+function artEditor(){
+  const E=S.artEdit;
+  const gl=E.gols.map((g,i)=>`<li class="art-ed-li"><span>⚽ <b>${esc(artNome(g.j,g.nj))}</b>${g.as?` <span class="art-as">assist.: ${esc(artNome(g.as,g.nas))}</span>`:''}</span><button type="button" class="art-x" data-art-delg="${i}" aria-label="Remover gol">✕</button></li>`).join('');
+  const cl=E.cartoes.map((c,i)=>`<li class="art-ed-li"><span>${ART_COR[c.cor].i} <b>${esc(artNome(c.j,c.nj))}</b></span><button type="button" class="art-x" data-art-delc="${i}" aria-label="Remover cartão">✕</button></li>`).join('');
+  return `<div class="art"><div class="step"><h2>${E.novo?'Lançar pelada':'Editar pelada'}</h2>
+    <label class="art-lb">Data<input class="txt" type="date" id="art-data" value="${esc(E.data)}" max="${artHoje()}"${E.novo?'':' disabled'}></label>
+    ${E.novo?'':'<p class="hint">Para mudar a data, apague esta e lance de novo.</p>'}</div>
+  <div class="step"><h2>⚽ Gols <span class="art-cnt">${E.gols.length}</span></h2>
+    <label class="art-lb">Quem fez o gol<select class="txt" id="art-gj">${artOpts(E.gj)}</select></label>
+    <label class="art-lb">Assistência<select class="txt" id="art-ga">${artOpts(E.ga,'Sem assistência')}</select></label>
+    <button class="btn" type="button" data-art-addg>+ Adicionar gol</button>
+    ${gl?`<ul class="art-ed">${gl}</ul>`:'<p class="hint">Nenhum gol lançado.</p>'}</div>
+  <div class="step"><h2>🟨 Cartões <span class="art-cnt">${E.cartoes.length}</span></h2>
+    <label class="art-lb">Jogador<select class="txt" id="art-cj">${artOpts(E.cj)}</select></label>
+    <div class="chips art-cores">${Object.entries(ART_COR).map(([k,c])=>`<button type="button" class="chip" data-art-cor="${k}" aria-pressed="${E.cor===k}">${c.i} ${c.t}</button>`).join('')}</div>
+    <button class="btn" type="button" data-art-addc>+ Adicionar cartão</button>
+    ${cl?`<ul class="art-ed">${cl}</ul>`:'<p class="hint">Nenhum cartão.</p>'}</div>
+  <div class="row art-acoes"><button class="btn" type="button" data-art-salvar${E.busy?' disabled':''}>${E.busy?'Salvando…':'Salvar'}</button><button class="btn ghost" type="button" data-art-cancelar>Cancelar</button>${E.novo?'':`<button class="btn ghost art-del" type="button" data-art-apagar>Apagar esta pelada</button>`}</div></div>`;
+}
+function artAbrir(id){
+  if(id){const s=S.sumulas[id];S.artEdit={novo:false,id,data:s.data,gols:(s.gols||[]).map(x=>({...x})),cartoes:(s.cartoes||[]).map(x=>({...x})),cor:'amarelo'}}
+  else S.artEdit={novo:true,data:artHoje(),gols:[],cartoes:[],cor:'amarelo'};
+  renderArt();window.scrollTo(0,0);
+}
+async function artSalvar(){
+  const E=S.artEdit;if(!S.db||!S.canCad){toast('Entre como organizador para salvar.');return}
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(E.data||'')){toast('Escolha a data da pelada.');return}
+  if(!E.gols.length&&!E.cartoes.length){toast('Lance pelo menos um gol ou cartão.');return}
+  const id=E.novo?`${S.pid}_${E.data}`:E.id;
+  if(E.novo&&S.sumulas[id]&&!E.confirmaSobre){E.confirmaSobre=true;toast('Já existe pelada lançada nesse dia. Toque em Salvar de novo para substituir.');return}
+  E.busy=true;renderArt();
+  try{await S.db.doc('sumulas/'+id).set({pid:S.pid,data:E.data,gols:E.gols,cartoes:E.cartoes,em:new Date().toISOString(),por:(window.CRAQUES_LOGIN&&window.CRAQUES_LOGIN.nome)||''});
+    S.artEdit=null;S.artAno=E.data.slice(0,4);S.artView='datas';toast('Pelada salva!');renderArt()}
+  catch(e){E.busy=false;renderArt();toast(e&&e.code==='invalid_argument'?'Sem permissão para salvar.':'Não consegui salvar. Tente de novo.')}
+}
+async function artApagar(){
+  const E=S.artEdit;if(!E.confirmaDel){E.confirmaDel=true;toast('Toque de novo em “Apagar esta pelada” para confirmar.');return}
+  try{await S.db.doc('sumulas/'+E.id).delete();S.artEdit=null;toast('Pelada apagada.');renderArt()}catch{toast('Não consegui apagar.')}
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-art-ano],[data-art-view],[data-art-nova],[data-art-edit],[data-art-addg],[data-art-addc],[data-art-delg],[data-art-delc],[data-art-cor],[data-art-salvar],[data-art-cancelar],[data-art-apagar]');
+  if(!t||!t.closest('#v-art'))return;const d=t.dataset,E=S.artEdit;
+  if(d.artAno){S.artAno=d.artAno;renderArt();return}
+  if(d.artView){S.artView=d.artView;renderArt();return}
+  if('artNova' in d){artAbrir(null);return}
+  if(d.artEdit){artAbrir(d.artEdit);return}
+  if(!E)return;
+  if('artAddg' in d){if(!E.gj){toast('Escolha quem fez o gol.');return}if(E.ga===E.gj){toast('A assistência tem que ser de outro jogador.');return}
+    E.gols.push({j:E.gj,nj:artNome(E.gj),...(E.ga?{as:E.ga,nas:artNome(E.ga)}:{})});E.gj='';E.ga='';renderArt();return}
+  if('artAddc' in d){if(!E.cj){toast('Escolha quem levou o cartão.');return}E.cartoes.push({j:E.cj,nj:artNome(E.cj),cor:E.cor});E.cj='';renderArt();return}
+  if(d.artDelg){E.gols.splice(+d.artDelg,1);renderArt();return}
+  if(d.artDelc){E.cartoes.splice(+d.artDelc,1);renderArt();return}
+  if(d.artCor){E.cor=d.artCor;renderArt();return}
+  if('artSalvar' in d){artSalvar();return}
+  if('artCancelar' in d){S.artEdit=null;renderArt();return}
+  if('artApagar' in d){artApagar();return}
+});
+document.addEventListener('change',e=>{const E=S.artEdit;if(!E||!e.target.closest('#v-art'))return;const id=e.target.id;
+  if(id==='art-data'){E.data=e.target.value;E.confirmaSobre=false}if(id==='art-gj')E.gj=e.target.value;if(id==='art-ga')E.ga=e.target.value;if(id==='art-cj')E.cj=e.target.value});
+
 /* ---------- Início ---------- */
 render();
 (async()=>{
@@ -1318,6 +1456,7 @@ render();
     if(S.canCad)db.collection('avaliacoes').onSnapshot(s=>{const a={};s.docs.forEach(d=>a[d.id]=d.data());S.avAll=a;if(!S.avMine&&a[S.uid]){S.avMine=a[S.uid];S.avPid=null}else if(a[S.uid])S.avMine=a[S.uid];avNomes();render()},()=>{});
     else db.doc('avaliacoes/'+S.uid).onSnapshot(s=>{const first=!S.avMine;S.avMine=s.exists?s.data():null;if(first&&!S.avDirty)S.avPid=null;render()},()=>{});
   }
+  db.collection('sumulas').onSnapshot(s=>{const r={};s.docs.forEach(d=>r[d.id]=d.data());S.sumulas=r;if(S.tab==='art'&&!S.artEdit)renderArt()},()=>{});
   db.collection('torneio').onSnapshot(s=>{const r={};s.docs.forEach(d=>r[d.id]=d.data());S.torneios=r;render()},()=>{});
   db.collection('rodada').onSnapshot(s=>{const r={};s.docs.forEach(d=>r[d.id]=d.data());S.rodadas=r;aplicaPelada()},()=>{});
 })();
