@@ -440,7 +440,7 @@ body.has-dock main{padding-bottom:120px}
       </ul>
       <h4>8.3 · Formação (defesa-meio-ataque)</h4>
       <table><thead><tr><th>Por time</th><th>Preferida</th><th>Alternativas</th></tr></thead><tbody>
-        <tr><td>4</td><td>2-1-1</td><td>2-2-0</td></tr><tr><td>5</td><td>2-2-1</td><td>2-1-2</td></tr><tr><td>6</td><td>3-2-1</td><td>2-2-2</td></tr><tr><td>7</td><td>3-3-1</td><td>3-2-2, depois 2-3-2</td></tr>
+        <tr><td>4</td><td>2-1-1</td><td>2-2-0</td></tr><tr><td>5</td><td>2-2-1</td><td>2-1-2</td></tr><tr><td>6</td><td>3-2-1</td><td>2-2-2 ou 2-3-1, conforme os atletas presentes</td></tr><tr><td>7</td><td>3-3-1</td><td>3-2-2, depois 2-3-2</td></tr>
       </tbody></table>
       <ul>
         <li>Todo time terá sempre, no mínimo, 2 jogadores na defesa.</li>
@@ -549,7 +549,7 @@ const ATTR=[
   {k:'def',sig:'DEF',nome:'Defesa',desc:'Marcação, desarme e posicionamento'},
   {k:'phy',sig:'PHY',nome:'Físico',desc:'Força, resistência e disputa de bola'}];
 const POS={DEF:'Defesa',MEI:'Meio',ATA:'Ataque'}, PK=['DEF','MEI','ATA'];
-const FORM={4:[[2,1,1],[2,2,0]],5:[[2,2,1],[2,1,2]],6:[[3,2,1],[2,2,2]],7:[[3,3,1],[3,2,2],[2,3,2]],10:[[4,4,2],[4,3,3],[3,5,2]]};
+const FORM={4:[[2,1,1],[2,2,0]],5:[[2,2,1],[2,1,2]],6:[[3,2,1],[2,2,2],[2,3,1]],7:[[3,3,1],[3,2,2],[2,3,2]],10:[[4,4,2],[4,3,3],[3,5,2]]};
 const NOPTS=[4,5,6,7,10], nLabel=n=>n===10?'11×11':String(n);
 const ADJ={DEF:['MEI','ATA'],MEI:['DEF','ATA'],ATA:['MEI','DEF']};
 const CORES=[['Laranja','--t1'],['Azul','--t2'],['Verde','--t3'],['Roxo','--t4'],['Amarelo','--t5'],['Rosa','--t6']];
