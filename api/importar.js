@@ -1,12 +1,12 @@
 import { pipeline, COLECOES, chave } from '../lib/db.js';
-import { editor } from '../lib/auth.js';
+import { isAdmin } from '../lib/auth.js';
 
 export const config = { api: { bodyParser: { sizeLimit: '4mb' } } };
 
 // Recebe partes do backup: { colecoes: { nome: { id: dados } }, fotos: { id: { t, b } } }
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ erro: 'Use POST.' });
-  if (!editor(req)) return res.status(403).json({ erro: 'Entre como organizador.' });
+  if (!isAdmin(req)) return res.status(403).json({ erro: 'Só administradores.' });
   try {
     const b = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
     const cmds = [];

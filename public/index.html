@@ -333,7 +333,7 @@ body.has-dock main{padding-bottom:120px}
       <button class="tab" role="tab" id="tab-elenco" aria-selected="true" data-tab="elenco">Elenco</button>
       <button class="tab" role="tab" id="tab-rodada" aria-selected="false" data-tab="rodada">Sorteio de Times</button>
       <button class="tab" role="tab" id="tab-torneio" aria-selected="false" data-tab="torneio">Torneio</button>
-      <button class="tab" role="tab" id="tab-art" aria-selected="false" data-tab="art">Artilharia</button>
+      <button class="tab" role="tab" id="tab-art" aria-selected="false" data-tab="art">Scout</button>
       <button class="tab" role="tab" id="tab-times" aria-selected="false" data-tab="times">Times</button>
       <button class="tab" role="tab" id="tab-estatuto" aria-selected="false" data-tab="estatuto">Estatuto</button>
       <button class="tab" role="tab" id="tab-aval" aria-selected="false" data-tab="aval">Avaliação</button>
@@ -1323,7 +1323,7 @@ async function importar(){
     I.rows=I.rows.map(x=>ok.has(x.nome)&&x.status==='novo'?{...x,status:'existe',msg:'Importado agora'}:x);I.busy=false;drawImport()}
 }
 
-/* ---------- Artilharia: gols, assistências e cartões por data ---------- */
+/* ---------- Scout: gols, assistências e cartões por data ---------- */
 // Coleção "sumulas", um documento por pelada e data: id `${pid}_${AAAA-MM-DD}`
 // { pid, data, gols:[{j,as,nj,nas}], cartoes:[{j,cor,nj}], em, por }
 const ART_COR={amarelo:{t:'Amarelo',i:'🟨'},azul:{t:'Azul',i:'🟦'},vermelho:{t:'Vermelho',i:'🟥'}};
@@ -1355,7 +1355,7 @@ function renderArt(){
   const g=artRank(doAno,'g'),a=artRank(doAno,'a'),k=artCartoes(doAno),tot=doAno.reduce((n,s)=>n+s.gols.length,0);
   const vw=S.artView||'rank';
   let h=`<div class="art"><div class="art-top"><div class="seg">${anos.map(y=>`<button type="button" data-art-ano="${y}" aria-pressed="${y===S.artAno}">${y}</button>`).join('')}</div>
-    ${S.canCad?`<button class="btn" type="button" data-art-nova>+ Lançar pelada</button>`:''}</div>
+    ${S.canWrite?`<button class="btn" type="button" data-art-nova>+ Lançar pelada</button>`:''}</div>
     <p class="hint">${doAno.length} pelada${doAno.length===1?'':'s'} lançada${doAno.length===1?'':'s'} em ${S.artAno} · ${tot} gol${tot===1?'':'s'}</p>
     <div class="chips art-chips"><button type="button" class="chip" data-art-view="rank" aria-pressed="${vw==='rank'}">Ranking</button><button type="button" class="chip" data-art-view="datas" aria-pressed="${vw==='datas'}">Por data</button></div>`;
   if(vw==='rank'){
@@ -1367,10 +1367,10 @@ function renderArt(){
       const porJ={};s.gols.forEach(x=>{(porJ[x.j]??=[]).push(x)});
       const gl=Object.entries(porJ).sort((a,b)=>b[1].length-a[1].length).map(([j,l])=>{const as=l.filter(x=>x.as).map(x=>esc(artNome(x.as,x.nas)));return `<li><b>${esc(artNome(j,l[0].nj))}</b> ${'⚽'.repeat(l.length)}${as.length?` <span class="art-as">assist.: ${as.join(', ')}</span>`:''}</li>`}).join('');
       const cl=(s.cartoes||[]).map(c=>`<li>${ART_COR[c.cor].i} ${esc(artNome(c.j,c.nj))}</li>`).join('');
-      return `<div class="step art-dia"><div class="row" style="justify-content:space-between"><h2>${esc(artData(s.data))}</h2>${S.canCad?`<button class="btn ghost" type="button" data-art-edit="${esc(s.id)}">Editar</button>`:''}</div>
+      return `<div class="step art-dia"><div class="row" style="justify-content:space-between"><h2>${esc(artData(s.data))}</h2>${S.canWrite?`<button class="btn ghost" type="button" data-art-edit="${esc(s.id)}">Editar</button>`:''}</div>
         <p class="hint">${s.gols.length} gol${s.gols.length===1?'':'s'}${(s.cartoes||[]).length?` · ${(s.cartoes||[]).length} cartão${(s.cartoes||[]).length===1?'':'ões'}`:''}</p>
         ${gl?`<ul class="art-ul">${gl}</ul>`:''}${cl?`<ul class="art-ul">${cl}</ul>`:''}</div>`}).join('')
-      :`<div class="step"><p class="hint">Nenhuma pelada lançada em ${S.artAno}.${S.canCad?' Toque em “+ Lançar pelada” depois do jogo.':''}</p></div>`;
+      :`<div class="step"><p class="hint">Nenhuma pelada lançada em ${S.artAno}.${S.canWrite?' Toque em “+ Lançar pelada” depois do jogo.':''}</p></div>`;
   }
   v.innerHTML=h+'</div>';
 }
@@ -1401,7 +1401,7 @@ function artAbrir(id){
   renderArt();window.scrollTo(0,0);
 }
 async function artSalvar(){
-  const E=S.artEdit;if(!S.db||!S.canCad){toast('Entre como organizador para salvar.');return}
+  const E=S.artEdit;if(!S.db||!S.canWrite){toast('Sem permissão para lançar no Scout.');return}
   if(!/^\d{4}-\d{2}-\d{2}$/.test(E.data||'')){toast('Escolha a data da pelada.');return}
   if(!E.gols.length&&!E.cartoes.length){toast('Lance pelo menos um gol ou cartão.');return}
   const id=E.novo?`${S.pid}_${E.data}`:E.id;

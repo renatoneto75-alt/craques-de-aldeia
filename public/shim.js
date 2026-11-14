@@ -3,7 +3,8 @@
 (function () {
   const TK = 'craques-token', NM = 'craques-nome';
   const ler = (k) => { try { return localStorage.getItem(k) || ''; } catch { return ''; } };
-  const TOKEN = ler(TK), NOME = ler(NM);
+  const TOKEN = ler(TK), NOME = ler(NM), RL = 'craques-role';
+  const ROLE = TOKEN ? (ler(RL) || 'admin') : '';
   const H = () => (TOKEN ? { 'x-token': TOKEN } : {});
   const erro = (msg, code) => Object.assign(new Error(msg), { code });
 
@@ -62,9 +63,16 @@
 
   let VID = ler('craques-vid'); if (!VID) { VID = 'v-' + novoId(); try { localStorage.setItem('craques-vid', VID); } catch {} }
   const ED = !!TOKEN;
+  const limpa = () => { try { [TK, NM, RL].forEach((k) => localStorage.removeItem(k)); } catch {} };
+  // Confere no servidor se o login ainda vale (senhas trocadas derrubam a sessão)
+  const SESSAO = ED ? fetch('/api/eu', { headers: H() }).then(async (r) => {
+    if (r.status === 401) { limpa(); location.reload(); return null; }
+    const j = await r.json().catch(() => null); if (j && j.role) { try { localStorage.setItem(RL, j.role); } catch {} return j.role; } return ROLE;
+  }).catch(() => ROLE) : Promise.resolve('');
   const user = {
     id: async () => (ED ? 'ed-' + NOME.toLowerCase().replace(/[^a-z0-9]+/g, '') : VID),
-    can: async () => ED, isOwner: async () => ED, canEdit: async () => ED,
+    can: async () => !!(await SESSAO),
+    isOwner: async () => (await SESSAO) === 'admin', canEdit: async () => (await SESSAO) === 'admin',
   };
   const downloads = {
     async save({ filename, data }) { const u = URL.createObjectURL(data instanceof Blob ? data : new Blob([data])); const a = document.createElement('a'); a.href = u; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); return { status: 'saved' }; },
@@ -73,23 +81,24 @@
   window.claude = { use: async (n) => caps[n] || null };
 
   // ---------- Entrar / sair (organizadores) ----------
-  window.CRAQUES_LOGIN = { nome: NOME, logado: ED };
+  window.CRAQUES_LOGIN = { nome: NOME, logado: ED, role: ROLE };
+  const NIVEL = { admin: 'Administrador', operador: 'Times e Scout' };
   function painel() {
     const ov = document.createElement('div');
     ov.className = 'lg-ov';
     ov.innerHTML = ED
-      ? `<div class="lg"><h3>Organizador</h3><p>Você entrou como <b>${NOME.replace(/[<>&]/g, '')}</b>.</p><div class="lg-b"><button type="button" class="lg-x">Fechar</button><button type="button" class="lg-ok" id="lg-sair">Sair</button></div></div>`
+      ? `<div class="lg"><h3>Organizador</h3><p>Você entrou como <b>${NOME.replace(/[<>&]/g, '')}</b>.</p><p>Acesso: <b>${NIVEL[ROLE] || ROLE}</b></p><div class="lg-b"><button type="button" class="lg-x">Fechar</button><button type="button" class="lg-ok" id="lg-sair">Sair</button></div></div>`
       : `<form class="lg"><h3>Entrar como organizador</h3><label>Nome<input name="n" autocomplete="username" required></label><label>Senha<input name="s" type="password" autocomplete="current-password" required></label><p class="lg-e" hidden></p><div class="lg-b"><button type="button" class="lg-x">Cancelar</button><button class="lg-ok">Entrar</button></div></form>`;
     document.body.appendChild(ov);
     ov.addEventListener('click', (e) => { if (e.target === ov || e.target.classList.contains('lg-x')) ov.remove(); });
     const sair = ov.querySelector('#lg-sair');
-    if (sair) sair.onclick = () => { try { localStorage.removeItem(TK); localStorage.removeItem(NM); } catch {} location.reload(); };
+    if (sair) sair.onclick = () => { limpa(); location.reload(); };
     const f = ov.querySelector('form');
     if (f) {
       f.n.focus();
       f.onsubmit = async (e) => {
         e.preventDefault(); const p = f.querySelector('.lg-e'); p.hidden = true;
-        try { const j = await api('/api/login', { method: 'POST', body: JSON.stringify({ nome: f.n.value, senha: f.s.value }) }); localStorage.setItem(TK, j.token); localStorage.setItem(NM, j.nome); location.reload(); }
+        try { const j = await api('/api/login', { method: 'POST', body: JSON.stringify({ nome: f.n.value, senha: f.s.value }) }); localStorage.setItem(TK, j.token); localStorage.setItem(NM, j.nome); localStorage.setItem(RL, j.role); location.reload(); }
         catch (err) { p.textContent = err.message; p.hidden = false; }
       };
     }

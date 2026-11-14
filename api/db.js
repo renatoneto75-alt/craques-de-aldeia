@@ -1,9 +1,13 @@
 import { redis, COLECOES, PRIVADAS, chave } from '../lib/db.js';
-import { editor } from '../lib/auth.js';
+import { quem } from '../lib/auth.js';
+
+// O que o operador (2º nível) pode gravar; o administrador grava tudo.
+const DO_OPERADOR = ['rodada', 'torneio', 'sumulas'];
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
-  const ed = editor(req);
+  const q = quem(req);
+  const ed = q?.role === 'admin';
   try {
     if (req.method === 'GET') {
       const { c, id } = req.query;
@@ -22,9 +26,9 @@ export default async function handler(req, res) {
       return res.status(200).json({ docs });
     }
     if (req.method === 'POST') {
-      if (!ed) return res.status(403).json({ erro: 'Entre como organizador para salvar.', code: 'invalid_argument' });
       const b = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
       const { op, c, id, data } = b;
+      if (!q || (!ed && !DO_OPERADOR.includes(c))) return res.status(403).json({ erro: q ? 'Seu acesso não permite alterar isso.' : 'Entre como organizador para salvar.', code: 'invalid_argument' });
       if (!COLECOES.includes(c) || !id || !/^[\w\-.:@+~]{1,200}$/.test(id)) return res.status(400).json({ erro: 'Documento inválido.' });
       if (op === 'delete') { await redis('HDEL', chave(c), id); return res.status(200).json({ ok: true }); }
       if (!data || typeof data !== 'object') return res.status(400).json({ erro: 'Sem dados.' });

@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import { redis } from '../lib/db.js';
-import { editor } from '../lib/auth.js';
+import { isAdmin } from '../lib/auth.js';
 
 export const config = { api: { bodyParser: { sizeLimit: '4mb' } } };
 
@@ -16,7 +16,7 @@ export default async function handler(req, res) {
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
       return res.status(200).send(Buffer.from(b, 'base64'));
     }
-    if (!editor(req)) return res.status(403).json({ erro: 'Entre como organizador.', code: 'invalid_argument' });
+    if (!isAdmin(req)) return res.status(403).json({ erro: 'Só administradores.', code: 'invalid_argument' });
     if (req.method === 'POST') {
       const b = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
       if (!b.b || !/^image\/(jpeg|png|webp|gif)$/.test(b.t || '')) return res.status(400).json({ erro: 'Imagem inválida.' });
