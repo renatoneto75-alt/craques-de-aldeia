@@ -6,7 +6,7 @@ export const config = { api: { bodyParser: { sizeLimit: '4mb' } } };
 // Recebe partes do backup: { colecoes: { nome: { id: dados } }, fotos: { id: { t, b } } }
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ erro: 'Use POST.' });
-  if (!isAdmin(req)) return res.status(403).json({ erro: 'Só administradores.' });
+  if (!(await isAdmin(req))) return res.status(403).json({ erro: 'Só administradores.' });
   try {
     const b = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
     const cmds = [];

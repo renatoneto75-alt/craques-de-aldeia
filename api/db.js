@@ -6,7 +6,7 @@ const DO_OPERADOR = ['rodada', 'torneio', 'sumulas'];
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
-  const q = quem(req);
+  const q = await quem(req);
   const ed = q?.role === 'admin';
   try {
     if (req.method === 'GET') {

@@ -1012,7 +1012,7 @@ function montarTimes(ids,N,opts={}){
 
 /* ---------- Ações ---------- */
 function saveRodada(patch){
-  S.rodada={...S.rodada,...patch};render();
+  S.rodada={porTime:5,presentes:[],resultado:null,...S.rodada,...patch};render();
   if(!S.db)return;const body=JSON.parse(JSON.stringify(S.rodada));
   const d='rodada/'+rodDoc(S.pid);S.rodadas[rodDoc(S.pid)]=body;
   enqueue(()=>S.db.doc(d).set(body));

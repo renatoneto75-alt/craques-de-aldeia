@@ -87,13 +87,39 @@
     const ov = document.createElement('div');
     ov.className = 'lg-ov';
     ov.innerHTML = ED
-      ? `<div class="lg"><h3>Organizador</h3><p>Você entrou como <b>${NOME.replace(/[<>&]/g, '')}</b>.</p><p>Acesso: <b>${NIVEL[ROLE] || ROLE}</b></p><div class="lg-b"><button type="button" class="lg-x">Fechar</button><button type="button" class="lg-ok" id="lg-sair">Sair</button></div></div>`
+      ? `<div class="lg"><h3>Organizador</h3><p>Você entrou como <b>${NOME.replace(/[<>&]/g, '')}</b>.</p><p>Acesso: <b>${NIVEL[ROLE] || ROLE}</b></p>
+         <details class="lg-d"><summary>Trocar minha senha</summary><form id="lg-troca"><label>Senha atual<input name="a" type="password" autocomplete="current-password" required></label><label>Nova senha<input name="n" type="password" autocomplete="new-password" minlength="6" required></label><label>Repita a nova senha<input name="c" type="password" autocomplete="new-password" minlength="6" required></label><p class="lg-e" hidden></p><button class="lg-ok">Salvar nova senha</button></form></details>
+         ${ROLE === 'admin' ? '<details class="lg-d" id="lg-eq"><summary>Senhas da equipe</summary><div id="lg-lista"><p class="lg-m">Carregando…</p></div></details>' : ''}
+         <div class="lg-b"><button type="button" class="lg-x">Fechar</button><button type="button" class="lg-ok" id="lg-sair">Sair</button></div></div>`
       : `<form class="lg"><h3>Entrar como organizador</h3><label>Nome<input name="n" autocomplete="username" required></label><label>Senha<input name="s" type="password" autocomplete="current-password" required></label><p class="lg-e" hidden></p><div class="lg-b"><button type="button" class="lg-x">Cancelar</button><button class="lg-ok">Entrar</button></div></form>`;
     document.body.appendChild(ov);
     ov.addEventListener('click', (e) => { if (e.target === ov || e.target.classList.contains('lg-x')) ov.remove(); });
     const sair = ov.querySelector('#lg-sair');
     if (sair) sair.onclick = () => { limpa(); location.reload(); };
-    const f = ov.querySelector('form');
+    const tr = ov.querySelector('#lg-troca');
+    if (tr) tr.onsubmit = async (e) => {
+      e.preventDefault(); const p = tr.querySelector('.lg-e'); p.hidden = true; p.style.color = '';
+      if (tr.n.value !== tr.c.value) { p.textContent = 'As duas senhas novas não são iguais.'; p.hidden = false; return; }
+      try {
+        const j = await api('/api/senha', { method: 'POST', body: JSON.stringify({ atual: tr.a.value, nova: tr.n.value }) });
+        localStorage.setItem(TK, j.token); tr.reset(); p.textContent = 'Senha trocada! Os outros aparelhos onde você estava logado vão pedir a senha nova.'; p.style.color = '#1d6a3a'; p.hidden = false;
+        setTimeout(() => location.reload(), 1800);
+      } catch (err) { p.textContent = err.message; p.hidden = false; }
+    };
+    const eq = ov.querySelector('#lg-eq');
+    if (eq) eq.addEventListener('toggle', async () => {
+      if (!eq.open) return; const box = eq.querySelector('#lg-lista');
+      try {
+        const j = await api('/api/senha');
+        box.innerHTML = j.usuarios.map((u) => `<div class="lg-u"><span><b>${u.nome.replace(/[<>&]/g, '')}</b><small>${NIVEL[u.role]} · ${u.propria ? 'senha própria' : 'senha inicial'}</small></span>${u.nome !== NOME && u.propria ? `<button type="button" class="lg-r" data-u="${u.nome.replace(/"/g, '&quot;')}">Resetar</button>` : ''}</div>`).join('') + '<p class="lg-m">Resetar volta a pessoa para a senha inicial (a da Vercel).</p>';
+        box.querySelectorAll('.lg-r').forEach((bt) => bt.onclick = async () => {
+          if (bt.dataset.ok !== '1') { bt.dataset.ok = '1'; bt.textContent = 'Confirmar?'; return; }
+          try { await api('/api/senha', { method: 'POST', body: JSON.stringify({ resetar: bt.dataset.u }) }); bt.replaceWith(Object.assign(document.createElement('small'), { textContent: 'resetada ✓' })); }
+          catch (err) { bt.textContent = err.message; }
+        });
+      } catch (err) { box.innerHTML = `<p class="lg-e">${err.message}</p>`; }
+    });
+    const f = ov.querySelector('form:not(#lg-troca)');
     if (f) {
       f.n.focus();
       f.onsubmit = async (e) => {
@@ -109,7 +135,7 @@
 .pitch{position:relative}.lg-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:grid;place-items:center;z-index:100;padding:16px}
 .lg{background:#fff;color:#16211a;border-radius:14px;padding:18px;width:100%;max-width:340px;font-family:system-ui,sans-serif}.lg h3{margin:0 0 10px}
 .lg label{display:block;font-weight:600;font-size:.85rem;margin:8px 0}.lg input{display:block;width:100%;margin-top:4px;padding:10px;border:1px solid #c9d3c7;border-radius:10px;font-size:1rem}
-.lg-b{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}.lg-b button{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}.lg-x{background:#e8ede6}.lg-ok{background:#1d6a3a;color:#fff}.lg-e{color:#b3261e;font-size:.88rem;margin:6px 0 0}`;
+.lg-b{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}.lg-b button{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}.lg-x{background:#e8ede6}.lg-ok{background:#1d6a3a;color:#fff}.lg-e{color:#b3261e;font-size:.88rem;margin:6px 0 0}\n.lg p{margin:4px 0}.lg-d{margin-top:12px;border-top:1px solid #e3e8e1;padding-top:10px}.lg-d summary{font-weight:700;cursor:pointer;color:#1d6a3a}.lg-d .lg-ok{margin-top:6px;border:0;border-radius:10px;padding:10px 14px;font-weight:700}\n.lg-u{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #eef2ec}.lg-u small{display:block;color:#5a6a5e;font-size:.8rem}.lg-r{border:1px solid #b3261e;color:#b3261e;background:#fff;border-radius:8px;padding:6px 10px;font-weight:700;cursor:pointer}.lg-m{color:#5a6a5e;font-size:.82rem}\n.lg{max-height:90vh;overflow:auto}`;
     document.head.appendChild(st);
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'lg-btn'; b.textContent = ED ? '👤 ' + NOME : 'Entrar';
